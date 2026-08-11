@@ -5,6 +5,7 @@ const db = new Database(path.join(__dirname, 'data.sqlite'));
 
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS articles (

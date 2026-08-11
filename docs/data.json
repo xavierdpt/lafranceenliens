@@ -10,5 +10,20 @@
     "radius_km": 10,
     "created_at": "2026-08-11 11:38:12",
     "tags": []
+  },
+  {
+    "id": 8,
+    "title": "Test: Fete du Citron",
+    "url": "https://fr.wikipedia.org/wiki/F%C3%AAte_du_citron",
+    "article_date": "2026-02-20",
+    "location_name": "Menton",
+    "lat": 43.7745,
+    "lng": 7.5028,
+    "radius_km": 4,
+    "created_at": "2026-08-11 12:11:56",
+    "tags": [
+      "culture",
+      "festival"
+    ]
   }
 ]

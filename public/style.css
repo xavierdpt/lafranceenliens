@@ -232,6 +232,61 @@ body {
   min-height: 1em;
 }
 
+.submission-panel {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.submission-text {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+  resize: vertical;
+}
+
+.submission-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.submission-actions button {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.open-issue-link {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
+.open-issue-link:hover {
+  text-decoration: underline;
+}
+
+.copy-status {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  min-height: 1em;
+}
+
 #articleList {
   list-style: none;
   margin: 0;

@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "import-issues": "node scripts/import-issues.js",
+    "sync": "npm run import-issues && npm run build"
   },
   "dependencies": {
     "better-sqlite3": "^11.3.0",

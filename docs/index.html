@@ -10,7 +10,7 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <h1>France Article Map <span class="readonly-badge">read-only</span></h1>
+    <h1>France Article Map <span class="readonly-badge">via GitHub Issues</span></h1>
     <div class="filter">
       <label>
         From
@@ -33,6 +33,64 @@
     <div id="map"></div>
 
     <aside class="sidebar">
+      <section class="add-article">
+        <h2>Submit an article</h2>
+        <p class="hint">
+          This site is static — there's no server to save to. Filling this in
+          generates a ready-to-paste GitHub issue; a maintainer script reviews
+          submissions and adds them to the map.
+        </p>
+        <form id="articleForm">
+          <label>
+            Title
+            <input type="text" id="title" required placeholder="Article title" />
+          </label>
+          <label>
+            Link (URL)
+            <input type="url" id="url" required placeholder="https://..." />
+          </label>
+          <label>
+            Date
+            <input type="date" id="articleDate" required />
+          </label>
+          <label>
+            Location name
+            <input type="text" id="locationName" required placeholder="e.g. Lyon" />
+          </label>
+          <div class="latlng-row">
+            <label>
+              Latitude
+              <input type="number" id="lat" step="any" required />
+            </label>
+            <label>
+              Longitude
+              <input type="number" id="lng" step="any" required />
+            </label>
+          </div>
+          <p class="hint">Click on the map to set the location.</p>
+          <label>
+            Circle radius (km)
+            <input type="number" id="radiusKm" min="1" max="500" step="0.5" value="10" required />
+          </label>
+          <label>
+            Tags (comma separated)
+            <input type="text" id="tags" placeholder="e.g. culture, sport" />
+          </label>
+          <button type="submit">Generate GitHub issue</button>
+          <p id="formError" class="form-error"></p>
+        </form>
+
+        <div id="submissionPanel" class="submission-panel" hidden>
+          <p class="hint">Copy this into a new issue, or use the pre-filled link below.</p>
+          <textarea id="submissionText" class="submission-text" readonly rows="12"></textarea>
+          <div class="submission-actions">
+            <button id="copySubmission" type="button">Copy to clipboard</button>
+            <a id="openIssueLink" class="open-issue-link" href="#" target="_blank" rel="noopener noreferrer">Open pre-filled GitHub issue &rarr;</a>
+          </div>
+          <p id="copyStatus" class="copy-status" aria-live="polite"></p>
+        </div>
+      </section>
+
       <section class="article-list">
         <h2>Articles (<span id="articleCount">0</span>)</h2>
         <ul id="articleList"></ul>

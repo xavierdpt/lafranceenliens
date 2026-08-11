@@ -1,5 +1,6 @@
 const FRANCE_CENTER = [46.6, 2.4];
 const FRANCE_ZOOM = 6;
+const GITHUB_REPO = 'xavierdpt/lafranceenliens';
 
 const map = L.map('map').setView(FRANCE_CENTER, FRANCE_ZOOM);
 
@@ -8,16 +9,39 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
 }).addTo(map);
 
+let pickedMarker = null;
 const layers = new Map(); // id -> { marker, circle }
 let allArticles = [];
 const selectedTags = new Set();
 
+const form = document.getElementById('articleForm');
+const latInput = document.getElementById('lat');
+const lngInput = document.getElementById('lng');
+const tagsInput = document.getElementById('tags');
+const formError = document.getElementById('formError');
+const submissionPanel = document.getElementById('submissionPanel');
+const submissionText = document.getElementById('submissionText');
+const openIssueLink = document.getElementById('openIssueLink');
+const copySubmissionBtn = document.getElementById('copySubmission');
+const copyStatus = document.getElementById('copyStatus');
 const articleList = document.getElementById('articleList');
 const articleCount = document.getElementById('articleCount');
 const filterFrom = document.getElementById('filterFrom');
 const filterTo = document.getElementById('filterTo');
 const clearFilterBtn = document.getElementById('clearFilter');
 const tagFilterContainer = document.getElementById('tagFilter');
+
+map.on('click', (e) => {
+  const { lat, lng } = e.latlng;
+  latInput.value = lat.toFixed(5);
+  lngInput.value = lng.toFixed(5);
+
+  if (pickedMarker) {
+    pickedMarker.setLatLng(e.latlng);
+  } else {
+    pickedMarker = L.marker(e.latlng, { opacity: 0.6 }).addTo(map);
+  }
+});
 
 function escapeHtml(str) {
   return String(str)
@@ -171,6 +195,87 @@ clearFilterBtn.addEventListener('click', () => {
   selectedTags.clear();
   renderTagChips();
   applyFilter();
+});
+
+const FRANCE_BOUNDS = { minLat: 40, maxLat: 52, minLng: -6, maxLng: 10 };
+
+function validateSubmission(payload) {
+  if (!payload.title) return 'title is required';
+  if (!/^https?:\/\/.+/i.test(payload.url)) return 'a valid http(s) url is required';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.article_date)) return 'date is required';
+  if (!payload.location_name) return 'location name is required';
+  if (!Number.isFinite(payload.lat) || !Number.isFinite(payload.lng)) return 'click the map to set a location';
+  if (
+    payload.lat < FRANCE_BOUNDS.minLat || payload.lat > FRANCE_BOUNDS.maxLat ||
+    payload.lng < FRANCE_BOUNDS.minLng || payload.lng > FRANCE_BOUNDS.maxLng
+  ) return 'location must be within France';
+  if (!Number.isFinite(payload.radius_km) || payload.radius_km <= 0 || payload.radius_km > 500) {
+    return 'radius_km must be a number between 0 and 500';
+  }
+  return null;
+}
+
+function buildIssueBody(payload) {
+  const section = (label, value) => `### ${label}\n\n${value === '' || value === undefined || value === null ? '_No response_' : value}\n`;
+  return [
+    section('Title', payload.title),
+    section('URL', payload.url),
+    section('Date (YYYY-MM-DD)', payload.article_date),
+    section('Location name', payload.location_name),
+    section('Latitude', payload.lat),
+    section('Longitude', payload.lng),
+    section('Radius km', payload.radius_km),
+    section('Tags (comma separated)', payload.tags.join(', ')),
+  ].join('\n');
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  formError.textContent = '';
+
+  const payload = {
+    title: document.getElementById('title').value.trim(),
+    url: document.getElementById('url').value.trim(),
+    article_date: document.getElementById('articleDate').value,
+    location_name: document.getElementById('locationName').value.trim(),
+    lat: Number(latInput.value),
+    lng: Number(lngInput.value),
+    radius_km: Number(document.getElementById('radiusKm').value),
+    tags: tagsInput.value.split(',').map((t) => t.trim()).filter(Boolean),
+  };
+
+  const error = validateSubmission(payload);
+  if (error) {
+    formError.textContent = error;
+    submissionPanel.hidden = true;
+    return;
+  }
+
+  const body = buildIssueBody(payload);
+  const title = `Article submission: ${payload.title}`;
+
+  submissionText.value = body;
+  copyStatus.textContent = '';
+
+  const issueUrl = new URL(`https://github.com/${GITHUB_REPO}/issues/new`);
+  issueUrl.searchParams.set('title', title);
+  issueUrl.searchParams.set('body', body);
+  issueUrl.searchParams.set('labels', 'submission');
+  openIssueLink.href = issueUrl.toString();
+
+  submissionPanel.hidden = false;
+  submissionPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+copySubmissionBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(submissionText.value);
+  } catch (err) {
+    submissionText.select();
+    document.execCommand('copy');
+  }
+  copyStatus.textContent = 'Copied!';
+  setTimeout(() => { copyStatus.textContent = ''; }, 2000);
 });
 
 loadArticles();
