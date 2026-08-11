@@ -10,16 +10,19 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let pickedMarker = null;
 const layers = new Map(); // id -> { marker, circle }
+const selectedTags = new Set();
 
 const form = document.getElementById('articleForm');
 const latInput = document.getElementById('lat');
 const lngInput = document.getElementById('lng');
+const tagsInput = document.getElementById('tags');
 const formError = document.getElementById('formError');
 const articleList = document.getElementById('articleList');
 const articleCount = document.getElementById('articleCount');
 const filterFrom = document.getElementById('filterFrom');
 const filterTo = document.getElementById('filterTo');
 const clearFilterBtn = document.getElementById('clearFilter');
+const tagFilterContainer = document.getElementById('tagFilter');
 
 map.on('click', (e) => {
   const { lat, lng } = e.latlng;
@@ -64,9 +67,12 @@ function renderMap(articles) {
     }).addTo(map);
 
     const marker = L.marker(latlng).addTo(map);
+    const tagsLine = article.tags && article.tags.length
+      ? `<br/><span class="popup-tags">${article.tags.map(escapeHtml).join(', ')}</span>`
+      : '';
     marker.bindPopup(
       `<strong>${escapeHtml(article.title)}</strong><br/>` +
-      `${escapeHtml(article.location_name)} &middot; ${escapeHtml(article.article_date)}<br/>` +
+      `${escapeHtml(article.location_name)} &middot; ${escapeHtml(article.article_date)}${tagsLine}<br/>` +
       `<a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">Open article</a>`
     );
 
@@ -89,12 +95,16 @@ function renderList(articles) {
   for (const article of articles) {
     const li = document.createElement('li');
     li.className = 'article-item';
+    const tagBadges = (article.tags || [])
+      .map((tag) => `<span class="tag-badge">${escapeHtml(tag)}</span>`)
+      .join('');
     li.innerHTML = `
       <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(article.title)}</a>
       <div class="article-meta">
         <span>${escapeHtml(article.location_name)} &middot; ${escapeHtml(article.radius_km)} km</span>
         <span>${escapeHtml(article.article_date)}</span>
       </div>
+      ${tagBadges ? `<div class="tag-badges">${tagBadges}</div>` : ''}
       <button class="article-delete" data-id="${article.id}" type="button">Remove</button>
     `;
     li.addEventListener('click', (e) => {
@@ -117,10 +127,46 @@ function renderList(articles) {
   });
 }
 
+function renderTagChips(tags) {
+  tagFilterContainer.innerHTML = '';
+
+  if (!tags.length) {
+    const span = document.createElement('span');
+    span.className = 'empty-state';
+    span.textContent = 'No tags yet.';
+    tagFilterContainer.appendChild(span);
+    return;
+  }
+
+  for (const tag of tags) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'tag-chip' + (selectedTags.has(tag.name) ? ' active' : '');
+    chip.textContent = `${tag.name} (${tag.count})`;
+    chip.addEventListener('click', () => {
+      if (selectedTags.has(tag.name)) {
+        selectedTags.delete(tag.name);
+      } else {
+        selectedTags.add(tag.name);
+      }
+      chip.classList.toggle('active');
+      loadArticles();
+    });
+    tagFilterContainer.appendChild(chip);
+  }
+}
+
+async function loadTags() {
+  const res = await fetch('/api/tags');
+  const tags = await res.json();
+  renderTagChips(tags);
+}
+
 async function loadArticles() {
   const params = new URLSearchParams();
   if (filterFrom.value) params.set('from', filterFrom.value);
   if (filterTo.value) params.set('to', filterTo.value);
+  if (selectedTags.size) params.set('tags', Array.from(selectedTags).join(','));
 
   const res = await fetch(`/api/articles?${params.toString()}`);
   const articles = await res.json();
@@ -141,6 +187,7 @@ form.addEventListener('submit', async (e) => {
     lat: Number(latInput.value),
     lng: Number(lngInput.value),
     radius_km: Number(document.getElementById('radiusKm').value),
+    tags: tagsInput.value.split(',').map((t) => t.trim()).filter(Boolean),
   };
 
   const res = await fetch('/api/articles', {
@@ -161,6 +208,7 @@ form.addEventListener('submit', async (e) => {
     map.removeLayer(pickedMarker);
     pickedMarker = null;
   }
+  loadTags();
   loadArticles();
 });
 
@@ -169,7 +217,10 @@ filterTo.addEventListener('change', loadArticles);
 clearFilterBtn.addEventListener('click', () => {
   filterFrom.value = '';
   filterTo.value = '';
+  selectedTags.clear();
+  loadTags();
   loadArticles();
 });
 
+loadTags();
 loadArticles();

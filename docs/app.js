@@ -10,12 +10,14 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const layers = new Map(); // id -> { marker, circle }
 let allArticles = [];
+const selectedTags = new Set();
 
 const articleList = document.getElementById('articleList');
 const articleCount = document.getElementById('articleCount');
 const filterFrom = document.getElementById('filterFrom');
 const filterTo = document.getElementById('filterTo');
 const clearFilterBtn = document.getElementById('clearFilter');
+const tagFilterContainer = document.getElementById('tagFilter');
 
 function escapeHtml(str) {
   return String(str)
@@ -48,9 +50,12 @@ function renderMap(articles) {
     }).addTo(map);
 
     const marker = L.marker(latlng).addTo(map);
+    const tagsLine = article.tags && article.tags.length
+      ? `<br/><span class="popup-tags">${article.tags.map(escapeHtml).join(', ')}</span>`
+      : '';
     marker.bindPopup(
       `<strong>${escapeHtml(article.title)}</strong><br/>` +
-      `${escapeHtml(article.location_name)} &middot; ${escapeHtml(article.article_date)}<br/>` +
+      `${escapeHtml(article.location_name)} &middot; ${escapeHtml(article.article_date)}${tagsLine}<br/>` +
       `<a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">Open article</a>`
     );
 
@@ -73,12 +78,16 @@ function renderList(articles) {
   for (const article of articles) {
     const li = document.createElement('li');
     li.className = 'article-item';
+    const tagBadges = (article.tags || [])
+      .map((tag) => `<span class="tag-badge">${escapeHtml(tag)}</span>`)
+      .join('');
     li.innerHTML = `
       <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(article.title)}</a>
       <div class="article-meta">
         <span>${escapeHtml(article.location_name)} &middot; ${escapeHtml(article.radius_km)} km</span>
         <span>${escapeHtml(article.article_date)}</span>
       </div>
+      ${tagBadges ? `<div class="tag-badges">${tagBadges}</div>` : ''}
     `;
     li.addEventListener('click', (e) => {
       if (e.target.closest('a')) return;
@@ -90,6 +99,48 @@ function renderList(articles) {
   }
 }
 
+function computeTagCounts() {
+  const counts = new Map();
+  for (const article of allArticles) {
+    for (const tag of article.tags || []) {
+      counts.set(tag, (counts.get(tag) || 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function renderTagChips() {
+  const tags = computeTagCounts();
+  tagFilterContainer.innerHTML = '';
+
+  if (!tags.length) {
+    const span = document.createElement('span');
+    span.className = 'empty-state';
+    span.textContent = 'No tags yet.';
+    tagFilterContainer.appendChild(span);
+    return;
+  }
+
+  for (const tag of tags) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'tag-chip' + (selectedTags.has(tag.name) ? ' active' : '');
+    chip.textContent = `${tag.name} (${tag.count})`;
+    chip.addEventListener('click', () => {
+      if (selectedTags.has(tag.name)) {
+        selectedTags.delete(tag.name);
+      } else {
+        selectedTags.add(tag.name);
+      }
+      chip.classList.toggle('active');
+      applyFilter();
+    });
+    tagFilterContainer.appendChild(chip);
+  }
+}
+
 function applyFilter() {
   const from = filterFrom.value;
   const to = filterTo.value;
@@ -97,6 +148,7 @@ function applyFilter() {
   const filtered = allArticles.filter((article) => {
     if (from && article.article_date < from) return false;
     if (to && article.article_date > to) return false;
+    if (selectedTags.size && !(article.tags || []).some((tag) => selectedTags.has(tag))) return false;
     return true;
   });
 
@@ -107,6 +159,7 @@ function applyFilter() {
 async function loadArticles() {
   const res = await fetch('data.json');
   allArticles = await res.json();
+  renderTagChips();
   applyFilter();
 }
 
@@ -115,6 +168,8 @@ filterTo.addEventListener('change', applyFilter);
 clearFilterBtn.addEventListener('click', () => {
   filterFrom.value = '';
   filterTo.value = '';
+  selectedTags.clear();
+  renderTagChips();
   applyFilter();
 });
 
