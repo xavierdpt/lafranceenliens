@@ -1,0 +1,4 @@
+node_modules/
+data.sqlite-shm
+data.sqlite-wal
+server.log

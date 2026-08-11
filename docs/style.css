@@ -1,0 +1,240 @@
+:root {
+  --bg: #f7f5f0;
+  --panel: #ffffff;
+  --border: #e0ddd4;
+  --ink: #2b2a27;
+  --muted: #706c60;
+  --accent: #c1440e;
+  --accent-dark: #9a350a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.topbar h1 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.readonly-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+}
+
+.filter {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+  color: var(--muted);
+  gap: 0.2rem;
+}
+
+.filter input {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.filter button {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+#map {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+  color: var(--ink);
+}
+
+#articleForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+#articleForm label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  color: var(--muted);
+  gap: 0.25rem;
+}
+
+#articleForm input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.latlng-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.latlng-row label {
+  flex: 1;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+#articleForm button[type="submit"] {
+  margin-top: 0.25rem;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#articleForm button[type="submit"]:hover {
+  background: var(--accent-dark);
+}
+
+.form-error {
+  color: #b3261e;
+  font-size: 0.78rem;
+  margin: 0;
+  min-height: 1em;
+}
+
+#articleList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.article-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.article-item:hover {
+  border-color: var(--accent);
+}
+
+.article-item a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.article-item a:hover {
+  text-decoration: underline;
+}
+
+.article-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.article-delete {
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 0.3rem;
+}
+
+.article-delete:hover {
+  color: #b3261e;
+}
+
+.empty-state {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.leaflet-popup-content a {
+  color: var(--accent);
+  font-weight: 600;
+}

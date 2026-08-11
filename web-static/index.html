@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>France Article Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <h1>France Article Map <span class="readonly-badge">read-only</span></h1>
+    <div class="filter">
+      <label>
+        From
+        <input type="date" id="filterFrom" />
+      </label>
+      <label>
+        To
+        <input type="date" id="filterTo" />
+      </label>
+      <button id="clearFilter" type="button">Clear</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div id="map"></div>
+
+    <aside class="sidebar">
+      <section class="article-list">
+        <h2>Articles (<span id="articleCount">0</span>)</h2>
+        <ul id="articleList"></ul>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
